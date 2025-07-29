@@ -632,42 +632,33 @@
         // This function is correct and doesn't need changes.
     }
 
-    // Show problems popup with detailed view
+    // Show problems popup for current month only
     function showProblemsPopup(title, problems, type) {
         const existingModal = document.querySelector('.cf-modal-overlay');
         if (existingModal) existingModal.remove();
         
         const content = document.createElement('div');
-        content.className = 'cf-problems-detailed-content';
+        content.className = 'cf-problems-popup-content';
         
         // Header with back button
         const header = document.createElement('div');
-        header.className = 'cf-problems-detailed-header';
+        header.className = 'cf-problems-header';
         header.innerHTML = `
             <button class="cf-back-btn" onclick="goBackToSolvedProblems()">← Back</button>
             <h3>${title}</h3>
-            <div class="cf-problems-summary">
-                <span>This Month: ${problems.length}</span>
-            </div>
+            <p>${problems.length} problem${problems.length !== 1 ? 's' : ''} solved this month</p>
         `;
         content.appendChild(header);
         
-        // Two-column layout
-        const columnsContainer = document.createElement('div');
-        columnsContainer.className = 'cf-problems-columns';
-        
-        // Left column - This month's problems
-        const leftColumn = document.createElement('div');
-        leftColumn.className = 'cf-problems-column';
-        leftColumn.innerHTML = '<h4>📅 This Month</h4>';
-        
-        const thisMonthList = document.createElement('div');
-        thisMonthList.className = 'cf-problems-list';
+        const problemsList = document.createElement('div');
+        problemsList.className = 'cf-problems-list';
         
         if (problems.length === 0) {
-            thisMonthList.innerHTML = '<p class="cf-no-data">No problems solved this month.</p>';
+            problemsList.innerHTML = '<p class="cf-no-data">No problems solved this month.</p>';
         } else {
+            // Sort problems by rating if available
             const sortedProblems = problems.sort((a, b) => (a.rating || 0) - (b.rating || 0));
+            
             sortedProblems.forEach(problem => {
                 const problemItem = document.createElement('div');
                 problemItem.className = 'cf-problem-item';
@@ -681,30 +672,14 @@
                         ${problem.rating ? `<div class="cf-problem-rating">${problem.rating}</div>` : ''}
                     </div>
                 `;
-                thisMonthList.appendChild(problemItem);
+                problemsList.appendChild(problemItem);
             });
         }
-        leftColumn.appendChild(thisMonthList);
         
-        // Right column - Total solved (placeholder for now)
-        const rightColumn = document.createElement('div');
-        rightColumn.className = 'cf-problems-column';
-        rightColumn.innerHTML = '<h4>📊 Total Solved</h4>';
+        content.appendChild(problemsList);
         
-        const totalList = document.createElement('div');
-        totalList.className = 'cf-problems-list';
-        totalList.innerHTML = '<p class="cf-no-data">Loading total problems...</p>';
-        rightColumn.appendChild(totalList);
-        
-        columnsContainer.appendChild(leftColumn);
-        columnsContainer.appendChild(rightColumn);
-        content.appendChild(columnsContainer);
-        
-        const modal = createModal(`📋 ${title}`, content);
+        const modal = createModal(`📋 ${title} Problems`, content);
         document.body.appendChild(modal);
-        
-        // Store current view for back button
-        window.currentSolvedProblemsView = 'detailed';
     }
     
     // Go back to solved problems main view
@@ -900,15 +875,8 @@
         chartContainer.className = 'cf-chart-container';
         chartContainer.innerHTML = '<h3>Rating Progress</h3><canvas id="cf-rating-chart"></canvas>';
         
-        // Add motivational message below chart with less spacing
-        const motivationSection = document.createElement('div');
-        motivationSection.className = 'cf-motivation-section-compact';
-        const user = getCurrentPageUser();
-        motivationSection.innerHTML = getMotivationalMessage(contestStats.currentRating, contestStats.maxRating, user);
-        
-        container.appendChild(summary);
-        container.appendChild(chartContainer);
-        container.appendChild(motivationSection);
+                            container.appendChild(summary);
+                    container.appendChild(chartContainer);
         
         setTimeout(() => createRatingChart(contestStats), 500);
         return container;
