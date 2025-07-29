@@ -657,15 +657,15 @@
 
 /* Compact Best Month Card */
 .cf-best-month-section-compact {
-    margin: 10px 0;
+    margin: 3px 0;
 }
 
 .cf-best-month-card-compact {
     background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-    border-radius: 8px;
-    padding: 8px 12px;
-    border-left: 3px solid #28a745;
-    font-size: 14px;
+    border-radius: 6px;
+    padding: 4px 8px;
+    border-left: 2px solid #28a745;
+    font-size: 12px;
     font-weight: 500;
     color: #155724;
     text-align: center;

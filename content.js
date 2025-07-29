@@ -765,17 +765,35 @@
             `;
         }
         
-        // Regular progression message
-        const nextRating = currentRating < 1200 ? 1200 : 
-                          currentRating < 1400 ? 1400 : 
-                          currentRating < 1600 ? 1600 : 
-                          currentRating < 1900 ? 1900 : 
-                          currentRating < 2100 ? 2100 : 
-                          currentRating < 2300 ? 2300 : 
-                          currentRating < 2400 ? 2400 : 
-                          currentRating < 2600 ? 2600 : 
-                          currentRating < 3000 ? 3000 : 3000;
+        // Check if there's a next rating level
+        let nextRating = null;
+        if (currentRating < 1200) nextRating = 1200;
+        else if (currentRating < 1400) nextRating = 1400;
+        else if (currentRating < 1600) nextRating = 1600;
+        else if (currentRating < 1900) nextRating = 1900;
+        else if (currentRating < 2100) nextRating = 2100;
+        else if (currentRating < 2300) nextRating = 2300;
+        else if (currentRating < 2400) nextRating = 2400;
+        else if (currentRating < 2600) nextRating = 2600;
+        else if (currentRating < 3000) nextRating = 3000;
         
+        // If no next rating found (user is at max level), show break record message
+        if (!nextRating) {
+            return `
+                <div class="cf-motivation-card">
+                    <h4>🏆 Maximum Achievement!</h4>
+                    <p>Current: <strong>${currentTitle}</strong> (${currentRating})</p>
+                    <p style="margin-top: 8px; font-style: italic; color: #1976d2;">
+                        🎯 <strong>Challenge:</strong> Break your record! The next rating will be named after you!
+                    </p>
+                    <p style="margin-top: 5px; font-size: 14px; color: #666;">
+                        Every point above ${currentRating} will be a new personal best with your name on it!
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Regular progression message
         const nextTitle = getRatingTitle(nextRating);
         const ratingDiff = nextRating - currentRating;
         
