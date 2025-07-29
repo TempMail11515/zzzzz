@@ -14,6 +14,7 @@
 - **Below Max Rating**: Provides specific goals and tips for the next rating level
 - **Personalized Tips**: Different advice based on current rating level
 - **User Name Integration**: Includes the user's name in motivational messages
+- **Specific Goals**: Shows exact rating points needed for next level (e.g., "Become a Specialist (1400) - you need 100 more points!")
 
 **Example Messages:**
 - For Pupil (1200-1399): "Focus on implementation and basic algorithms"
@@ -52,6 +53,37 @@
 - International Grandmaster (2600-2999): Red (#FF0000)
 - Legendary Grandmaster (3000+): Dark Red (#cc0000)
 
+### 4. ✅ Best Month Message in Solved Problems
+
+**Added Functions:**
+- `findBestMonth(handle)` - Finds the month with maximum solved problems
+- Enhanced `createSolvedProblemsContent()` - Now includes best month message
+
+**Features:**
+- **Automatic Detection**: Scans last 24 months or since registration (whichever is shorter)
+- **Best Month Display**: Shows the most productive month with problem count
+- **Challenge Message**: Encourages users to beat their personal record
+- **Green Styling**: Uses success-themed colors to highlight achievement
+
+**Example Message:**
+"🏆 Your Best Month! Your most productive month was December 2023 with 45 problems solved! 💪 Challenge: Try to beat your record of 45 problems in a single month!"
+
+### 5. ✅ Enhanced Contest Progress Motivation
+
+**Enhanced Functions:**
+- `getMotivationalMessage()` - Now provides specific rating goals and exact point requirements
+
+**New Features:**
+- **Specific Rating Targets**: Shows exact rating needed for next level (e.g., "Reach Specialist (1400)")
+- **Point Requirements**: Displays exact number of points needed (e.g., "you need 100 more points!")
+- **Progressive Motivation**: Different messages for each rating range
+- **Clear Goals**: Makes it easy to understand what rating is needed for the next title
+
+**Example Messages:**
+- Newbie: "🎯 Goal: Reach Pupil (1200) by solving 400 more problems!"
+- Pupil: "🎯 Goal: Become a Specialist (1400) - you need 100 more points!"
+- Specialist: "🎯 Goal: Reach Expert (1600) - only 200 points to go!"
+
 ## CSS Additions
 
 **New Styles Added:**
@@ -71,6 +103,22 @@
     opacity: 0;
     transform: translateY(20px);
 }
+
+.cf-best-month-section {
+    margin: 20px 0;
+}
+
+.cf-best-month-card {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 5px solid #28a745;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    animation: slideInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
 ```
 
 ## Code Changes Summary
@@ -80,6 +128,7 @@
    - `getRatingColor(rating)` - Line 613
    - `getRatingTitle(rating)` - Line 627
    - `getMotivationalMessage(currentRating, maxRating, user)` - Line 641
+   - `findBestMonth(handle)` - Line 686
 
 2. **Enhanced createContestContent():**
    - Added motivational message section
@@ -89,17 +138,32 @@
    - Uses user's rating color for chart elements
    - Improved point styling and hover effects
 
+4. **Enhanced createSolvedProblemsContent():**
+   - Now async function to support best month detection
+   - Added best month message section
+   - Integrated with findBestMonth function
+
+5. **Enhanced displaySolvedProblemsModal():**
+   - Now async to handle best month detection
+   - Updated all calling functions to await
+
 ### styles.css
 1. **Added Motivation Card Styles:**
    - `.cf-motivation-section`
    - `.cf-motivation-card`
    - Responsive design matching existing theme
 
+2. **Added Best Month Card Styles:**
+   - `.cf-best-month-section`
+   - `.cf-best-month-card`
+   - Green success theme for achievements
+
 ## Testing
 
 A test file (`test.html`) has been created to verify:
 - Motivational message generation for different scenarios
 - Rating color mapping accuracy
+- Enhanced motivation with specific goals
 - Integration with existing functionality
 
 ## Backward Compatibility

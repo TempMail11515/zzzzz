@@ -14,11 +14,14 @@
             <li>✅ Motivational messages in contest progress</li>
             <li>✅ Automatic tag problem counts (already implemented)</li>
             <li>✅ Chart colors matching user rating colors</li>
+            <li>✅ Best month message in solved problems</li>
+            <li>✅ Enhanced contest progress motivation with specific goals</li>
         </ul>
         
         <div class="cf-button-container">
             <button class="cf-analytics-button" onclick="testMotivationalMessage()">Test Motivational Message</button>
             <button class="cf-analytics-button" onclick="testRatingColors()">Test Rating Colors</button>
+            <button class="cf-analytics-button" onclick="testEnhancedMotivation()">Test Enhanced Motivation</button>
         </div>
         
         <div id="test-output" style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;"></div>
@@ -61,6 +64,34 @@
                 output.innerHTML += `
                     <div style="margin: 10px 0; padding: 10px; border-radius: 8px; background: ${color}; color: white;">
                         Rating: ${rating} - ${title} - Color: ${color}
+                    </div>
+                `;
+            });
+        }
+        
+        function testEnhancedMotivation() {
+            const output = document.getElementById('test-output');
+            
+            // Test different rating scenarios for enhanced motivation
+            const scenarios = [
+                { current: 800, max: 1200, user: 'testuser' },   // Newbie to Pupil
+                { current: 1300, max: 1400, user: 'testuser' },  // Pupil to Specialist
+                { current: 1500, max: 1600, user: 'testuser' },  // Specialist to Expert
+                { current: 1800, max: 1900, user: 'testuser' },  // Expert to Candidate Master
+                { current: 2000, max: 2100, user: 'testuser' },  // Candidate Master to Master
+                { current: 2200, max: 2300, user: 'testuser' },  // Master to International Master
+                { current: 2350, max: 2400, user: 'testuser' },  // International Master to Grandmaster
+                { current: 2500, max: 2600, user: 'testuser' },  // Grandmaster to International Grandmaster
+                { current: 2800, max: 3000, user: 'testuser' }   // International Grandmaster to Legendary
+            ];
+            
+            output.innerHTML = '<h3>Enhanced Motivation Tests:</h3>';
+            scenarios.forEach((scenario, index) => {
+                const message = getMotivationalMessage(scenario.current, scenario.max, scenario.user);
+                output.innerHTML += `
+                    <div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                        <h4>Scenario ${index + 1}: Current=${scenario.current}, Max=${scenario.max}</h4>
+                        ${message}
                     </div>
                 `;
             });

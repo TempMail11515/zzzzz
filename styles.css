@@ -625,3 +625,49 @@
     font-style: italic;
     color: #666;
 }
+
+/* Best Month Card Styles */
+.cf-best-month-section {
+    margin: 20px 0;
+}
+
+.cf-best-month-card {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 5px solid #28a745;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    animation: slideInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.cf-best-month-card h4 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #155724;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-best-month-card p {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: #155724;
+    font-size: 15px;
+}
+
+.cf-best-month-card strong {
+    color: #0f5132;
+    font-weight: 600;
+}
+
+.cf-best-month-card p:last-child {
+    margin-bottom: 0;
+    font-style: italic;
+    color: #0f5132;
+}

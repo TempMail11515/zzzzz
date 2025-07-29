@@ -265,7 +265,7 @@
             }
 
             const solvedProblemsStats = await fetchSolvedProblemsStats(user);
-            displaySolvedProblemsModal(solvedProblemsStats, user);
+            await displaySolvedProblemsModal(solvedProblemsStats, user);
         } catch (error) {
             showErrorModal(`Failed to load solved problems data: ${error.message}`);
         }
@@ -490,10 +490,11 @@
     }
 
     // Display solved problems modal
-    function displaySolvedProblemsModal(stats, user) {
+    async function displaySolvedProblemsModal(stats, user) {
         const existingModal = document.querySelector('.cf-modal-overlay');
-        if (existingModal) document.body.removeChild(existingModal);
-        const modal = createModal(`📈 Solved Problems for ${user}`, createSolvedProblemsContent(stats));
+        if (existingModal) existingModal.remove();
+        const content = await createSolvedProblemsContent(stats);
+        const modal = createModal(`📈 Solved Problems for ${user}`, content);
         document.body.appendChild(modal);
     }
 
@@ -667,11 +668,33 @@
             const nextTitle = getRatingTitle(nextRating);
             const ratingDiff = nextRating - currentRating;
             
+            // More specific motivation based on current rating
+            let specificMotivation = '';
+            if (currentRating < 1200) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Pupil</strong> (1200) by solving ${ratingDiff} more problems!`;
+            } else if (currentRating < 1400) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Become a <strong>Specialist</strong> (1400) - you need ${ratingDiff} more points!`;
+            } else if (currentRating < 1600) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Expert</strong> (1600) - only ${ratingDiff} points to go!`;
+            } else if (currentRating < 1900) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Become a <strong>Candidate Master</strong> (1900) - ${ratingDiff} more points needed!`;
+            } else if (currentRating < 2100) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Master</strong> (2100) - ${ratingDiff} points remaining!`;
+            } else if (currentRating < 2300) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Become an <strong>International Master</strong> (2300) - ${ratingDiff} more points!`;
+            } else if (currentRating < 2400) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Grandmaster</strong> (2400) - ${ratingDiff} points to go!`;
+            } else if (currentRating < 2600) {
+                specificMotivation = `🎯 <strong>Goal:</strong> Become an <strong>International Grandmaster</strong> (2600) - ${ratingDiff} more points!`;
+            } else {
+                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Legendary Grandmaster</strong> (3000) - ${ratingDiff} points needed!`;
+            }
+            
             return `
                 <div class="cf-motivation-card">
                     <h4>🚀 Keep Going!</h4>
                     <p>You're currently a <strong>${currentTitle}</strong> with rating <strong>${currentRating}</strong>.</p>
-                    <p>📈 <strong>Next Goal:</strong> Become a <strong>${nextTitle}</strong>! You need ${ratingDiff} more rating points.</p>
+                    <p>${specificMotivation}</p>
                     <p>💡 <strong>Tip:</strong> Focus on ${currentRating < 1400 ? 'implementation and basic algorithms' : 
                                                            currentRating < 1600 ? 'greedy algorithms and data structures' :
                                                            currentRating < 1900 ? 'dynamic programming and graph algorithms' :
@@ -679,6 +702,55 @@
                                                            'mastering complex algorithms and optimization techniques'} to improve faster!</p>
                 </div>
             `;
+        }
+    }
+
+    // Find the month with maximum solved problems
+    async function findBestMonth(handle) {
+        try {
+            const now = new Date();
+            const userResponse = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+            if (!userResponse.ok) throw new Error(`HTTP ${userResponse.status}`);
+            const userData = await userResponse.json();
+            if (userData.status !== 'OK') throw new Error(`User info API Error: ${userData.comment}`);
+            const userInfo = userData.result?.[0];
+            if (!userInfo) throw new Error('User not found');
+            
+            const registrationDate = new Date(userInfo.registrationTimeSeconds * 1000);
+            const startDate = new Date(registrationDate.getFullYear(), registrationDate.getMonth(), 1);
+            const endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            let bestMonth = null;
+            let maxProblems = 0;
+            
+            // Check last 24 months or since registration, whichever is shorter
+            const monthsToCheck = Math.min(24, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1);
+            
+            for (let i = 0; i < monthsToCheck; i++) {
+                const checkDate = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
+                if (checkDate < startDate) break;
+                
+                const monthOffset = -i;
+                try {
+                    const monthStats = await fetchSolvedProblemsStats(handle, monthOffset);
+                    if (monthStats.totalSolved > maxProblems) {
+                        maxProblems = monthStats.totalSolved;
+                        bestMonth = {
+                            monthName: monthStats.monthName,
+                            totalSolved: monthStats.totalSolved,
+                            monthOffset: monthStats.monthOffset
+                        };
+                    }
+                } catch (error) {
+                    // Skip months that can't be fetched
+                    continue;
+                }
+            }
+            
+            return bestMonth;
+        } catch (error) {
+            console.error('Error finding best month:', error);
+            return null;
         }
     }
 
@@ -714,7 +786,7 @@
     }
 
     // Create solved problems content
-    function createSolvedProblemsContent(stats) {
+    async function createSolvedProblemsContent(stats) {
         const container = document.createElement('div');
         container.className = 'cf-solved-problems-content';
 
@@ -740,6 +812,22 @@
         summary.className = 'cf-summary';
         summary.innerHTML = `<div class="cf-summary-item"><span class="cf-label">Problems Solved this month:</span><span class="cf-value">${stats.totalSolved}</span></div>`;
         container.appendChild(summary);
+
+        // Add best month message
+        const user = getCurrentPageUser();
+        const bestMonth = await findBestMonth(user);
+        if (bestMonth && bestMonth.totalSolved > stats.totalSolved) {
+            const bestMonthSection = document.createElement('div');
+            bestMonthSection.className = 'cf-best-month-section';
+            bestMonthSection.innerHTML = `
+                <div class="cf-best-month-card">
+                    <h4>🏆 Your Best Month!</h4>
+                    <p>Your most productive month was <strong>${bestMonth.monthName}</strong> with <strong>${bestMonth.totalSolved}</strong> problems solved!</p>
+                    <p>💪 <strong>Challenge:</strong> Try to beat your record of ${bestMonth.totalSolved} problems in a single month!</p>
+                </div>
+            `;
+            container.appendChild(bestMonthSection);
+        }
 
         const topicsSection = document.createElement('div');
         topicsSection.className = 'cf-topics-section';
@@ -928,12 +1016,12 @@
         showLoadingModal('Loading data for selected month...');
         try {
             const newStats = await fetchSolvedProblemsStats(user, newMonthOffset);
-            displaySolvedProblemsModal(newStats, user);
+            await displaySolvedProblemsModal(newStats, user);
         } catch (error) {
             showErrorModal(error.message);
             setTimeout(() => {
                  const currentStats = window.currentSolvedProblemsStats;
-                 if (currentStats) displaySolvedProblemsModal(currentStats, user);
+                 if (currentStats) await displaySolvedProblemsModal(currentStats, user);
             }, 1500);
         }
     }
