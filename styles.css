@@ -628,12 +628,14 @@
 
 /* Compact Motivation Section */
 .cf-motivation-section-compact {
-    margin: 10px 0;
+    margin: 5px 0;
 }
 
 .cf-motivation-section-compact .cf-motivation-card {
-    margin: 10px 0;
-    padding: 15px;
+    margin: 5px 0;
+    padding: 12px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-left: 4px solid #2196f3;
 }
 
 /* Best Month Card Styles */
@@ -651,6 +653,22 @@
     animation: slideInUp 0.6s ease forwards;
     opacity: 0;
     transform: translateY(20px);
+}
+
+/* Compact Best Month Card */
+.cf-best-month-section-compact {
+    margin: 10px 0;
+}
+
+.cf-best-month-card-compact {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 8px;
+    padding: 8px 12px;
+    border-left: 3px solid #28a745;
+    font-size: 14px;
+    font-weight: 500;
+    color: #155724;
+    text-align: center;
 }
 
 .cf-best-month-card h4 {
@@ -697,7 +715,7 @@
 
 .cf-click-hint {
     position: absolute;
-    top: 10px;
+    bottom: 10px;
     right: 10px;
     background: rgba(102, 126, 234, 0.1);
     color: #667eea;
@@ -798,4 +816,69 @@
     font-weight: 600;
     min-width: 50px;
     text-align: center;
+}
+
+/* Detailed Problems View Styles */
+.cf-problems-detailed-content {
+    max-width: 1000px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.cf-problems-detailed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.cf-back-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cf-back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.cf-problems-detailed-header h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-problems-summary {
+    font-size: 16px;
+    color: #666;
+    font-weight: 500;
+}
+
+.cf-problems-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.cf-problems-column h4 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
 }

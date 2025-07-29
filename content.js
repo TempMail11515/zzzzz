@@ -632,31 +632,42 @@
         // This function is correct and doesn't need changes.
     }
 
-    // Show problems popup
+    // Show problems popup with detailed view
     function showProblemsPopup(title, problems, type) {
         const existingModal = document.querySelector('.cf-modal-overlay');
         if (existingModal) existingModal.remove();
         
         const content = document.createElement('div');
-        content.className = 'cf-problems-popup-content';
+        content.className = 'cf-problems-detailed-content';
         
+        // Header with back button
         const header = document.createElement('div');
-        header.className = 'cf-problems-header';
+        header.className = 'cf-problems-detailed-header';
         header.innerHTML = `
+            <button class="cf-back-btn" onclick="goBackToSolvedProblems()">← Back</button>
             <h3>${title}</h3>
-            <p>${problems.length} problem${problems.length !== 1 ? 's' : ''} solved this month</p>
+            <div class="cf-problems-summary">
+                <span>This Month: ${problems.length}</span>
+            </div>
         `;
         content.appendChild(header);
         
-        const problemsList = document.createElement('div');
-        problemsList.className = 'cf-problems-list';
+        // Two-column layout
+        const columnsContainer = document.createElement('div');
+        columnsContainer.className = 'cf-problems-columns';
+        
+        // Left column - This month's problems
+        const leftColumn = document.createElement('div');
+        leftColumn.className = 'cf-problems-column';
+        leftColumn.innerHTML = '<h4>📅 This Month</h4>';
+        
+        const thisMonthList = document.createElement('div');
+        thisMonthList.className = 'cf-problems-list';
         
         if (problems.length === 0) {
-            problemsList.innerHTML = '<p class="cf-no-data">No problems found.</p>';
+            thisMonthList.innerHTML = '<p class="cf-no-data">No problems solved this month.</p>';
         } else {
-            // Sort problems by rating if available
             const sortedProblems = problems.sort((a, b) => (a.rating || 0) - (b.rating || 0));
-            
             sortedProblems.forEach(problem => {
                 const problemItem = document.createElement('div');
                 problemItem.className = 'cf-problem-item';
@@ -670,14 +681,39 @@
                         ${problem.rating ? `<div class="cf-problem-rating">${problem.rating}</div>` : ''}
                     </div>
                 `;
-                problemsList.appendChild(problemItem);
+                thisMonthList.appendChild(problemItem);
             });
         }
+        leftColumn.appendChild(thisMonthList);
         
-        content.appendChild(problemsList);
+        // Right column - Total solved (placeholder for now)
+        const rightColumn = document.createElement('div');
+        rightColumn.className = 'cf-problems-column';
+        rightColumn.innerHTML = '<h4>📊 Total Solved</h4>';
         
-        const modal = createModal(`📋 ${title} Problems`, content);
+        const totalList = document.createElement('div');
+        totalList.className = 'cf-problems-list';
+        totalList.innerHTML = '<p class="cf-no-data">Loading total problems...</p>';
+        rightColumn.appendChild(totalList);
+        
+        columnsContainer.appendChild(leftColumn);
+        columnsContainer.appendChild(rightColumn);
+        content.appendChild(columnsContainer);
+        
+        const modal = createModal(`📋 ${title}`, content);
         document.body.appendChild(modal);
+        
+        // Store current view for back button
+        window.currentSolvedProblemsView = 'detailed';
+    }
+    
+    // Go back to solved problems main view
+    function goBackToSolvedProblems() {
+        const currentStats = window.currentSolvedProblemsStats;
+        const user = getCurrentPageUser();
+        if (currentStats && user) {
+            displaySolvedProblemsModal(currentStats, user);
+        }
     }
 
     // Get rating color based on rating value
@@ -726,16 +762,29 @@
         const nextTitle = getRatingTitle(nextRating);
         const ratingDiff = nextRating - currentRating;
         
+        // Add motivational text based on rating difference
+        let motivation = '';
+        if (ratingDiff <= 50) {
+            motivation = '💪 You\'re so close! Keep pushing!';
+        } else if (ratingDiff <= 100) {
+            motivation = '🚀 Almost there! Stay focused!';
+        } else if (ratingDiff <= 200) {
+            motivation = '📈 Great progress! Keep going!';
+        } else {
+            motivation = '🎯 Every step counts! Keep practicing!';
+        }
+        
         return `
             <div class="cf-motivation-card">
                 <h4>📈 Next Goal</h4>
                 <p>Current: <strong>${currentTitle}</strong> (${currentRating})</p>
                 <p>Next: <strong>${nextTitle}</strong> (${nextRating}) - Need ${ratingDiff} points</p>
+                <p style="margin-top: 8px; font-style: italic; color: #1976d2;">${motivation}</p>
             </div>
         `;
     }
 
-    // Find the month with maximum solved problems
+    // Find the month with maximum solved problems (optimized)
     async function findBestMonth(handle) {
         try {
             const now = new Date();
@@ -753,29 +802,44 @@
             let bestMonth = null;
             let maxProblems = 0;
             
-            // Check last 24 months or since registration, whichever is shorter
-            const monthsToCheck = Math.min(24, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1);
+            // Check last 12 months only for better performance
+            const monthsToCheck = Math.min(12, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1);
             
-            for (let i = 0; i < monthsToCheck; i++) {
-                const checkDate = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
-                if (checkDate < startDate) break;
-                
-                const monthOffset = -i;
-                try {
-                    const monthStats = await fetchSolvedProblemsStats(handle, monthOffset);
-                    if (monthStats.totalSolved > maxProblems) {
-                        maxProblems = monthStats.totalSolved;
-                        bestMonth = {
-                            monthName: monthStats.monthName,
-                            totalSolved: monthStats.totalSolved,
-                            monthOffset: monthStats.monthOffset
-                        };
-                    }
-                } catch (error) {
-                    // Skip months that can't be fetched
-                    continue;
+            // Check current month first
+            try {
+                const currentMonthStats = await fetchSolvedProblemsStats(handle, 0);
+                if (currentMonthStats.totalSolved > 0) {
+                    maxProblems = currentMonthStats.totalSolved;
+                    bestMonth = {
+                        monthName: currentMonthStats.monthName,
+                        totalSolved: currentMonthStats.totalSolved,
+                        monthOffset: currentMonthStats.monthOffset
+                    };
                 }
+            } catch (error) {
+                // Continue if current month fails
             }
+            
+            // Check previous months in parallel (limited to 6 for performance)
+            const promises = [];
+            for (let i = 1; i < Math.min(monthsToCheck, 6); i++) {
+                const monthOffset = -i;
+                promises.push(
+                    fetchSolvedProblemsStats(handle, monthOffset).catch(() => null)
+                );
+            }
+            
+            const results = await Promise.all(promises);
+            results.forEach((monthStats, index) => {
+                if (monthStats && monthStats.totalSolved > maxProblems) {
+                    maxProblems = monthStats.totalSolved;
+                    bestMonth = {
+                        monthName: monthStats.monthName,
+                        totalSolved: monthStats.totalSolved,
+                        monthOffset: monthStats.monthOffset
+                    };
+                }
+            });
             
             return bestMonth;
         } catch (error) {
@@ -843,17 +907,15 @@
         summary.innerHTML = `<div class="cf-summary-item"><span class="cf-label">Problems Solved this month:</span><span class="cf-value">${stats.totalSolved}</span></div>`;
         container.appendChild(summary);
 
-        // Add best month message
+        // Add best month message (compact)
         const user = getCurrentPageUser();
         const bestMonth = await findBestMonth(user);
         if (bestMonth && bestMonth.totalSolved > stats.totalSolved) {
             const bestMonthSection = document.createElement('div');
-            bestMonthSection.className = 'cf-best-month-section';
+            bestMonthSection.className = 'cf-best-month-section-compact';
             bestMonthSection.innerHTML = `
-                <div class="cf-best-month-card">
-                    <h4>🏆 Your Best Month!</h4>
-                    <p>Your most productive month was <strong>${bestMonth.monthName}</strong> with <strong>${bestMonth.totalSolved}</strong> problems solved!</p>
-                    <p>💪 <strong>Challenge:</strong> Try to beat your record of ${bestMonth.totalSolved} problems in a single month!</p>
+                <div class="cf-best-month-card-compact">
+                    <span>🏆 Best: ${bestMonth.monthName} (${bestMonth.totalSolved} problems)</span>
                 </div>
             `;
             container.appendChild(bestMonthSection);
