@@ -390,7 +390,7 @@
                     if (!solvedProblems.has(key)) {
                         solvedProblems.add(key);
                         
-                        // Store problem details for topics
+                        // Store problem details for topics (each problem can be in multiple topics)
                         (sub.problem.tags || []).forEach(tag => {
                             if (topicStats[tag]) {
                                 topicStats[tag].solved++;
@@ -421,6 +421,15 @@
                     }
                 }
             });
+            
+            // Calculate the sum of all topic counts to verify it matches totalSolved
+            const topicSum = Object.values(topicStats).reduce((sum, topic) => sum + topic.solved, 0);
+            
+            // If there's a mismatch, log it for debugging
+            if (topicSum !== solvedProblems.size) {
+                console.log(`Topic sum: ${topicSum}, Total solved: ${solvedProblems.size}`);
+                console.log('This is expected because problems can have multiple tags');
+            }
             
             return {
                 totalSolved: solvedProblems.size,
