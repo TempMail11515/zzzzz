@@ -748,7 +748,24 @@
     function getMotivationalMessage(currentRating, maxRating, user) {
         const currentTitle = getRatingTitle(currentRating);
         
-        // Always show next rating goal, even if at max rating
+        // Check if user is at their maximum rating
+        if (currentRating >= maxRating) {
+            return `
+                <div class="cf-motivation-card">
+                    <h4>🏆 Maximum Achievement!</h4>
+                    <p>Current: <strong>${currentTitle}</strong> (${currentRating})</p>
+                    <p>Max Rating: <strong>${maxRating}</strong></p>
+                    <p style="margin-top: 8px; font-style: italic; color: #1976d2;">
+                        🎯 <strong>Challenge:</strong> Break your record! The next rating will be named after you!
+                    </p>
+                    <p style="margin-top: 5px; font-size: 14px; color: #666;">
+                        Every point above ${maxRating} will be a new personal best with your name on it!
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Regular progression message
         const nextRating = currentRating < 1200 ? 1200 : 
                           currentRating < 1400 ? 1400 : 
                           currentRating < 1600 ? 1600 : 
