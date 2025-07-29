@@ -915,19 +915,7 @@
         summary.innerHTML = `<div class="cf-summary-item"><span class="cf-label">Problems Solved this month:</span><span class="cf-value">${stats.totalSolved}</span></div>`;
         container.appendChild(summary);
 
-        // Add best month message (compact)
-        const user = getCurrentPageUser();
-        const bestMonth = await findBestMonth(user);
-        if (bestMonth && bestMonth.totalSolved > stats.totalSolved) {
-            const bestMonthSection = document.createElement('div');
-            bestMonthSection.className = 'cf-best-month-section-compact';
-            bestMonthSection.innerHTML = `
-                <div class="cf-best-month-card-compact">
-                    <span>🏆 Best: ${bestMonth.monthName} (${bestMonth.totalSolved} problems)</span>
-                </div>
-            `;
-            container.appendChild(bestMonthSection);
-        }
+
 
         const topicsSection = document.createElement('div');
         topicsSection.className = 'cf-topics-section';
