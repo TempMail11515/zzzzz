@@ -711,68 +711,28 @@
     // Get motivational message based on current rating and max rating
     function getMotivationalMessage(currentRating, maxRating, user) {
         const currentTitle = getRatingTitle(currentRating);
-        const maxTitle = getRatingTitle(maxRating);
         
-        if (currentRating === maxRating) {
-            // User is at their max rating - encourage breaking it
-            return `
-                <div class="cf-motivation-card">
-                    <h4>🏆 Maximum Achievement!</h4>
-                    <p>Congratulations <strong>${user}</strong>! You've reached your peak rating of <strong>${currentRating}</strong> (${currentTitle}).</p>
-                    <p>💪 <strong>Next Challenge:</strong> Break your personal record! Every rating point above ${maxRating} will be a new achievement with your name on it!</p>
-                    <p>🎯 <strong>Goal:</strong> Aim for ${maxRating + 100} to set a new personal best!</p>
-                </div>
-            `;
-        } else {
-            // User is below their max - encourage reaching next level
-            const nextRating = currentRating < 1200 ? 1200 : 
-                              currentRating < 1400 ? 1400 : 
-                              currentRating < 1600 ? 1600 : 
-                              currentRating < 1900 ? 1900 : 
-                              currentRating < 2100 ? 2100 : 
-                              currentRating < 2300 ? 2300 : 
-                              currentRating < 2400 ? 2400 : 
-                              currentRating < 2600 ? 2600 : 
-                              currentRating < 3000 ? 3000 : 3000;
-            
-            const nextTitle = getRatingTitle(nextRating);
-            const ratingDiff = nextRating - currentRating;
-            
-            // More specific motivation based on current rating
-            let specificMotivation = '';
-            if (currentRating < 1200) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Pupil</strong> (1200) by solving ${ratingDiff} more problems!`;
-            } else if (currentRating < 1400) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Become a <strong>Specialist</strong> (1400) - you need ${ratingDiff} more points!`;
-            } else if (currentRating < 1600) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Expert</strong> (1600) - only ${ratingDiff} points to go!`;
-            } else if (currentRating < 1900) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Become a <strong>Candidate Master</strong> (1900) - ${ratingDiff} more points needed!`;
-            } else if (currentRating < 2100) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Master</strong> (2100) - ${ratingDiff} points remaining!`;
-            } else if (currentRating < 2300) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Become an <strong>International Master</strong> (2300) - ${ratingDiff} more points!`;
-            } else if (currentRating < 2400) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Grandmaster</strong> (2400) - ${ratingDiff} points to go!`;
-            } else if (currentRating < 2600) {
-                specificMotivation = `🎯 <strong>Goal:</strong> Become an <strong>International Grandmaster</strong> (2600) - ${ratingDiff} more points!`;
-            } else {
-                specificMotivation = `🎯 <strong>Goal:</strong> Reach <strong>Legendary Grandmaster</strong> (3000) - ${ratingDiff} points needed!`;
-            }
-            
-            return `
-                <div class="cf-motivation-card">
-                    <h4>🚀 Keep Going!</h4>
-                    <p>You're currently a <strong>${currentTitle}</strong> with rating <strong>${currentRating}</strong>.</p>
-                    <p>${specificMotivation}</p>
-                    <p>💡 <strong>Tip:</strong> Focus on ${currentRating < 1400 ? 'implementation and basic algorithms' : 
-                                                           currentRating < 1600 ? 'greedy algorithms and data structures' :
-                                                           currentRating < 1900 ? 'dynamic programming and graph algorithms' :
-                                                           currentRating < 2100 ? 'advanced algorithms and problem-solving techniques' :
-                                                           'mastering complex algorithms and optimization techniques'} to improve faster!</p>
-                </div>
-            `;
-        }
+        // Always show next rating goal, even if at max rating
+        const nextRating = currentRating < 1200 ? 1200 : 
+                          currentRating < 1400 ? 1400 : 
+                          currentRating < 1600 ? 1600 : 
+                          currentRating < 1900 ? 1900 : 
+                          currentRating < 2100 ? 2100 : 
+                          currentRating < 2300 ? 2300 : 
+                          currentRating < 2400 ? 2400 : 
+                          currentRating < 2600 ? 2600 : 
+                          currentRating < 3000 ? 3000 : 3000;
+        
+        const nextTitle = getRatingTitle(nextRating);
+        const ratingDiff = nextRating - currentRating;
+        
+        return `
+            <div class="cf-motivation-card">
+                <h4>📈 Next Goal</h4>
+                <p>Current: <strong>${currentTitle}</strong> (${currentRating})</p>
+                <p>Next: <strong>${nextTitle}</strong> (${nextRating}) - Need ${ratingDiff} points</p>
+            </div>
+        `;
     }
 
     // Find the month with maximum solved problems
@@ -837,19 +797,19 @@
             <div class="cf-summary-item"><span class="cf-label">Max Rating:</span><span class="cf-value">${contestStats.maxRating}</span></div>
         `;
         
-        // Add motivational message
-        const motivationSection = document.createElement('div');
-        motivationSection.className = 'cf-motivation-section';
-        const user = getCurrentPageUser();
-        motivationSection.innerHTML = getMotivationalMessage(contestStats.currentRating, contestStats.maxRating, user);
-        
         const chartContainer = document.createElement('div');
         chartContainer.className = 'cf-chart-container';
         chartContainer.innerHTML = '<h3>Rating Progress</h3><canvas id="cf-rating-chart"></canvas>';
         
+        // Add motivational message below chart with less spacing
+        const motivationSection = document.createElement('div');
+        motivationSection.className = 'cf-motivation-section-compact';
+        const user = getCurrentPageUser();
+        motivationSection.innerHTML = getMotivationalMessage(contestStats.currentRating, contestStats.maxRating, user);
+        
         container.appendChild(summary);
-        container.appendChild(motivationSection);
         container.appendChild(chartContainer);
+        container.appendChild(motivationSection);
         
         setTimeout(() => createRatingChart(contestStats), 500);
         return container;

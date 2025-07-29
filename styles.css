@@ -626,6 +626,16 @@
     color: #666;
 }
 
+/* Compact Motivation Section */
+.cf-motivation-section-compact {
+    margin: 10px 0;
+}
+
+.cf-motivation-section-compact .cf-motivation-card {
+    margin: 10px 0;
+    padding: 15px;
+}
+
 /* Best Month Card Styles */
 .cf-best-month-section {
     margin: 20px 0;

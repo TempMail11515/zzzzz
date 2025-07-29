@@ -10,16 +10,17 @@
 - `getMotivationalMessage(currentRating, maxRating, user)` - Generates personalized motivational messages
 
 **Features:**
-- **At Max Rating**: Encourages breaking personal records with personalized messages
-- **Below Max Rating**: Provides specific goals and tips for the next rating level
-- **Personalized Tips**: Different advice based on current rating level
-- **User Name Integration**: Includes the user's name in motivational messages
-- **Specific Goals**: Shows exact rating points needed for next level (e.g., "Become a Specialist (1400) - you need 100 more points!")
+- **Simple Format**: Shows current rating and next rating goal
+- **Points Needed**: Displays exact number of points needed for next level
+- **Clean Design**: Compact message below the chart
+- **Always Shows Goal**: Even if at max rating, shows next achievable goal
 
 **Example Messages:**
-- For Pupil (1200-1399): "Focus on implementation and basic algorithms"
-- For Specialist (1400-1599): "Focus on greedy algorithms and data structures"
-- For Expert (1600-1899): "Focus on dynamic programming and graph algorithms"
+```
+📈 Next Goal
+Current: Pupil (1207)
+Next: Specialist (1400) - Need 193 points
+```
 
 ### 2. ✅ Automatic Tag Problem Counts
 
@@ -80,9 +81,9 @@
 - **Clear Goals**: Makes it easy to understand what rating is needed for the next title
 
 **Example Messages:**
-- Newbie: "🎯 Goal: Reach Pupil (1200) by solving 400 more problems!"
-- Pupil: "🎯 Goal: Become a Specialist (1400) - you need 100 more points!"
-- Specialist: "🎯 Goal: Reach Expert (1600) - only 200 points to go!"
+- Newbie: "Current: Newbie (800) | Next: Pupil (1200) - Need 400 points"
+- Pupil: "Current: Pupil (1300) | Next: Specialist (1400) - Need 100 points"
+- Specialist: "Current: Specialist (1500) | Next: Expert (1600) - Need 100 points"
 
 ### 6. ✅ Clickable Topic and Rating Cards with Problem Details
 
