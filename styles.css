@@ -671,3 +671,121 @@
     font-style: italic;
     color: #0f5132;
 }
+
+/* Clickable Cards Styles */
+.cf-clickable {
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.cf-clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    border-color: #667eea;
+}
+
+.cf-click-hint {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cf-clickable:hover .cf-click-hint {
+    opacity: 1;
+}
+
+/* Problems Popup Styles */
+.cf-problems-popup-content {
+    max-width: 600px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.cf-problems-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.cf-problems-header h3 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-problems-header p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.cf-problems-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cf-problem-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.cf-problem-item:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+    transform: translateX(5px);
+}
+
+.cf-problem-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.cf-problem-name {
+    flex: 1;
+}
+
+.cf-problem-link {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+}
+
+.cf-problem-link:hover {
+    color: #667eea;
+    text-decoration: underline;
+}
+
+.cf-problem-rating {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+}

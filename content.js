@@ -366,9 +366,9 @@
             const ratingStats = {};
             
             ALL_TOPICS.forEach(topic => {
-                topicStats[topic] = { solved: 0, totalSolved: 0, total: TOPIC_PROBLEM_COUNTS[topic] || 0 };
+                topicStats[topic] = { solved: 0, totalSolved: 0, total: TOPIC_PROBLEM_COUNTS[topic] || 0, problems: [] };
             });
-            for (let rating = 800; rating <= 3500; rating += 100) ratingStats[rating] = 0;
+            for (let rating = 800; rating <= 3500; rating += 100) ratingStats[rating] = { count: 0, problems: [] };
             
             const allTimeSolvedProblems = new Set();
             submissions.forEach(sub => {
@@ -389,12 +389,34 @@
                     const key = `${sub.problem.contestId}-${sub.problem.index}`;
                     if (!solvedProblems.has(key)) {
                         solvedProblems.add(key);
+                        
+                        // Store problem details for topics
                         (sub.problem.tags || []).forEach(tag => {
-                            if (topicStats[tag]) topicStats[tag].solved++;
+                            if (topicStats[tag]) {
+                                topicStats[tag].solved++;
+                                topicStats[tag].problems.push({
+                                    contestId: sub.problem.contestId,
+                                    index: sub.problem.index,
+                                    name: sub.problem.name,
+                                    rating: sub.problem.rating,
+                                    url: `https://codeforces.com/problemset/problem/${sub.problem.contestId}/${sub.problem.index}`
+                                });
+                            }
                         });
+                        
+                        // Store problem details for ratings
                         if (sub.problem.rating) {
                             const level = Math.floor(sub.problem.rating / 100) * 100;
-                            if (ratingStats[level] !== undefined) ratingStats[level]++;
+                            if (ratingStats[level] !== undefined) {
+                                ratingStats[level].count++;
+                                ratingStats[level].problems.push({
+                                    contestId: sub.problem.contestId,
+                                    index: sub.problem.index,
+                                    name: sub.problem.name,
+                                    rating: sub.problem.rating,
+                                    url: `https://codeforces.com/problemset/problem/${sub.problem.contestId}/${sub.problem.index}`
+                                });
+                            }
                         }
                     }
                 }
@@ -403,7 +425,7 @@
             return {
                 totalSolved: solvedProblems.size,
                 topicStats: Object.fromEntries(Object.entries(topicStats).filter(([_, s]) => s.solved > 0)),
-                ratingStats: Object.fromEntries(Object.entries(ratingStats).filter(([_, c]) => c > 0)),
+                ratingStats: Object.fromEntries(Object.entries(ratingStats).filter(([_, r]) => r.count > 0)),
                 monthOffset: monthOffset,
                 monthName: targetDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
                 registrationTimeSeconds: userInfo.registrationTimeSeconds
@@ -608,6 +630,54 @@
 
     function showUnsolvedTopicInfo(topic) {
         // This function is correct and doesn't need changes.
+    }
+
+    // Show problems popup
+    function showProblemsPopup(title, problems, type) {
+        const existingModal = document.querySelector('.cf-modal-overlay');
+        if (existingModal) existingModal.remove();
+        
+        const content = document.createElement('div');
+        content.className = 'cf-problems-popup-content';
+        
+        const header = document.createElement('div');
+        header.className = 'cf-problems-header';
+        header.innerHTML = `
+            <h3>${title}</h3>
+            <p>${problems.length} problem${problems.length !== 1 ? 's' : ''} solved this month</p>
+        `;
+        content.appendChild(header);
+        
+        const problemsList = document.createElement('div');
+        problemsList.className = 'cf-problems-list';
+        
+        if (problems.length === 0) {
+            problemsList.innerHTML = '<p class="cf-no-data">No problems found.</p>';
+        } else {
+            // Sort problems by rating if available
+            const sortedProblems = problems.sort((a, b) => (a.rating || 0) - (b.rating || 0));
+            
+            sortedProblems.forEach(problem => {
+                const problemItem = document.createElement('div');
+                problemItem.className = 'cf-problem-item';
+                problemItem.innerHTML = `
+                    <div class="cf-problem-info">
+                        <div class="cf-problem-name">
+                            <a href="${problem.url}" target="_blank" class="cf-problem-link">
+                                ${problem.contestId}${problem.index} - ${problem.name}
+                            </a>
+                        </div>
+                        ${problem.rating ? `<div class="cf-problem-rating">${problem.rating}</div>` : ''}
+                    </div>
+                `;
+                problemsList.appendChild(problemItem);
+            });
+        }
+        
+        content.appendChild(problemsList);
+        
+        const modal = createModal(`📋 ${title} Problems`, content);
+        document.body.appendChild(modal);
     }
 
     // Get rating color based on rating value
@@ -865,7 +935,7 @@
         container.innerHTML = ''; // Clear previous content
         sortedTopics.forEach(([topicName, topicData], index) => {
             const topicCard = document.createElement('div');
-            topicCard.className = 'cf-topic-card cf-solved-card';
+            topicCard.className = 'cf-topic-card cf-solved-card cf-clickable';
             topicCard.style.animationDelay = `${index * 50}ms`;
             topicCard.innerHTML = `
                 <div class="cf-topic-header">
@@ -877,7 +947,14 @@
                     <div class="cf-stat"><span class="cf-stat-label">Total Solved:</span><span class="cf-stat-value">${topicData.totalSolved || 0}</span></div>
                     <div class="cf-stat"><span class="cf-stat-label">Total in CF:</span><span class="cf-stat-value">${topicData.total}</span></div>
                 </div>
+                <div class="cf-click-hint">Click to see problems</div>
             `;
+            
+            // Add click event to show problems popup
+            topicCard.addEventListener('click', () => {
+                showProblemsPopup(topicName, topicData.problems, 'topic');
+            });
+            
             container.appendChild(topicCard);
         });
     }
@@ -895,19 +972,26 @@
         }
         
         container.innerHTML = ''; // Clear previous content
-        sortedRatings.forEach(([rating, count], index) => {
+        sortedRatings.forEach(([rating, ratingData], index) => {
             const ratingCard = document.createElement('div');
-            ratingCard.className = 'cf-rating-card';
+            ratingCard.className = 'cf-rating-card cf-clickable';
             ratingCard.style.animationDelay = `${index * 50}ms`;
             ratingCard.innerHTML = `
                 <div class="cf-rating-header">
                     <h4 class="cf-rating-level">${rating}</h4>
-                    <span class="cf-rating-badge">${count}</span>
+                    <span class="cf-rating-badge">${ratingData.count}</span>
                 </div>
                 <div class="cf-rating-stats">
-                    <div class="cf-stat"><span class="cf-stat-label">Solved:</span><span class="cf-stat-value">${count}</span></div>
+                    <div class="cf-stat"><span class="cf-stat-label">Solved:</span><span class="cf-stat-value">${ratingData.count}</span></div>
                 </div>
+                <div class="cf-click-hint">Click to see problems</div>
             `;
+            
+            // Add click event to show problems popup
+            ratingCard.addEventListener('click', () => {
+                showProblemsPopup(`Rating ${rating}`, ratingData.problems, 'rating');
+            });
+            
             container.appendChild(ratingCard);
         });
     }

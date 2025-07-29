@@ -16,12 +16,14 @@
             <li>✅ Chart colors matching user rating colors</li>
             <li>✅ Best month message in solved problems</li>
             <li>✅ Enhanced contest progress motivation with specific goals</li>
+            <li>✅ Clickable topic and rating cards with problem details</li>
         </ul>
         
         <div class="cf-button-container">
             <button class="cf-analytics-button" onclick="testMotivationalMessage()">Test Motivational Message</button>
             <button class="cf-analytics-button" onclick="testRatingColors()">Test Rating Colors</button>
             <button class="cf-analytics-button" onclick="testEnhancedMotivation()">Test Enhanced Motivation</button>
+            <button class="cf-analytics-button" onclick="testProblemsPopup()">Test Problems Popup</button>
         </div>
         
         <div id="test-output" style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;"></div>
@@ -95,6 +97,55 @@
                     </div>
                 `;
             });
+        }
+        
+        function testProblemsPopup() {
+            const output = document.getElementById('test-output');
+            
+            // Mock problems data for testing
+            const mockProblems = [
+                {
+                    contestId: 1234,
+                    index: 'A',
+                    name: 'Test Problem 1',
+                    rating: 800,
+                    url: 'https://codeforces.com/problemset/problem/1234/A'
+                },
+                {
+                    contestId: 1234,
+                    index: 'B',
+                    name: 'Test Problem 2',
+                    rating: 1200,
+                    url: 'https://codeforces.com/problemset/problem/1234/B'
+                },
+                {
+                    contestId: 1234,
+                    index: 'C',
+                    name: 'Test Problem 3',
+                    rating: 1400,
+                    url: 'https://codeforces.com/problemset/problem/1234/C'
+                }
+            ];
+            
+            output.innerHTML = '<h3>Problems Popup Test:</h3>';
+            output.innerHTML += '<p>Click the button below to test the problems popup functionality:</p>';
+            
+            const testButton = document.createElement('button');
+            testButton.className = 'cf-analytics-button';
+            testButton.textContent = 'Show Greedy Problems';
+            testButton.onclick = () => {
+                showProblemsPopup('Greedy', mockProblems, 'topic');
+            };
+            output.appendChild(testButton);
+            
+            const testButton2 = document.createElement('button');
+            testButton2.className = 'cf-analytics-button';
+            testButton2.style.marginLeft = '10px';
+            testButton2.textContent = 'Show Rating 1200 Problems';
+            testButton2.onclick = () => {
+                showProblemsPopup('Rating 1200', mockProblems.filter(p => p.rating === 1200), 'rating');
+            };
+            output.appendChild(testButton2);
         }
     </script>
 </body>

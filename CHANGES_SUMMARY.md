@@ -84,6 +84,36 @@
 - Pupil: "🎯 Goal: Become a Specialist (1400) - you need 100 more points!"
 - Specialist: "🎯 Goal: Reach Expert (1600) - only 200 points to go!"
 
+### 6. ✅ Clickable Topic and Rating Cards with Problem Details
+
+**Added Functions:**
+- `showProblemsPopup(title, problems, type)` - Shows popup with problem details
+- Enhanced `fetchSolvedProblemsStats()` - Now stores problem details for each topic/rating
+- Enhanced `populateSolvedTopicsMonth()` - Makes topic cards clickable
+- Enhanced `populateSolvedRatingsMonth()` - Makes rating cards clickable
+
+**Features:**
+- **Clickable Cards**: Topic and rating cards are now clickable with hover effects
+- **Problem Details**: Shows actual problem names, contest IDs, and ratings
+- **Direct Links**: Each problem opens in a new tab when clicked
+- **Sorted Display**: Problems are sorted by rating for better organization
+- **Visual Feedback**: Hover effects and click hints for better UX
+
+**Example Popup Content:**
+```
+📋 Greedy Problems
+3 problems solved this month
+
+1234A - Test Problem 1                    [800]
+1234B - Test Problem 2                    [1200]
+1234C - Test Problem 3                    [1400]
+```
+
+**Interactive Elements:**
+- **Topic Cards**: Click to see all problems solved in that topic this month
+- **Rating Cards**: Click to see all problems solved at that rating level this month
+- **Problem Links**: Click any problem to open it on Codeforces in a new tab
+
 ## CSS Additions
 
 **New Styles Added:**
@@ -147,6 +177,26 @@
    - Now async to handle best month detection
    - Updated all calling functions to await
 
+6. **Enhanced fetchSolvedProblemsStats():**
+   - Now stores problem details for each topic and rating
+   - Added problems array to topicStats and ratingStats
+   - Includes problem URLs for direct linking
+
+7. **Enhanced populateSolvedTopicsMonth():**
+   - Made topic cards clickable
+   - Added click event to show problems popup
+   - Added visual hints for clickability
+
+8. **Enhanced populateSolvedRatingsMonth():**
+   - Made rating cards clickable
+   - Added click event to show problems popup
+   - Updated to handle new ratingStats structure
+
+9. **Added showProblemsPopup():**
+   - Creates popup with problem details
+   - Shows problem names, contest IDs, and ratings
+   - Provides direct links to Codeforces problems
+
 ### styles.css
 1. **Added Motivation Card Styles:**
    - `.cf-motivation-section`
@@ -158,12 +208,25 @@
    - `.cf-best-month-card`
    - Green success theme for achievements
 
+3. **Added Clickable Cards Styles:**
+   - `.cf-clickable` - Makes cards clickable with hover effects
+   - `.cf-click-hint` - Shows "Click to see problems" hint on hover
+   - Enhanced hover animations and visual feedback
+
+4. **Added Problems Popup Styles:**
+   - `.cf-problems-popup-content` - Popup container with scrolling
+   - `.cf-problems-header` - Header with title and count
+   - `.cf-problem-item` - Individual problem items with hover effects
+   - `.cf-problem-link` - Clickable problem links
+   - `.cf-problem-rating` - Rating badges for each problem
+
 ## Testing
 
 A test file (`test.html`) has been created to verify:
 - Motivational message generation for different scenarios
 - Rating color mapping accuracy
 - Enhanced motivation with specific goals
+- Problems popup functionality with mock data
 - Integration with existing functionality
 
 ## Backward Compatibility
