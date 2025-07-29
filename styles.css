@@ -579,3 +579,310 @@
     border-radius: 6px;
     min-width: 80px;
 }
+
+/* Motivation Card Styles */
+.cf-motivation-section {
+    margin: 20px 0;
+}
+
+.cf-motivation-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 5px solid #667eea;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    animation: slideInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.cf-motivation-card h4 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-motivation-card p {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: #555;
+    font-size: 15px;
+}
+
+.cf-motivation-card strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.cf-motivation-card p:last-child {
+    margin-bottom: 0;
+    font-style: italic;
+    color: #666;
+}
+
+/* Compact Motivation Section */
+.cf-motivation-section-compact {
+    margin: 2px 0;
+}
+
+.cf-motivation-section-compact .cf-motivation-card {
+    margin: 2px 0;
+    padding: 10px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-left: 4px solid #2196f3;
+}
+
+/* Best Month Card Styles */
+.cf-best-month-section {
+    margin: 20px 0;
+}
+
+.cf-best-month-card {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 5px solid #28a745;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    animation: slideInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* Compact Best Month Card */
+.cf-best-month-section-compact {
+    margin: 8px 0;
+}
+
+.cf-best-month-card-compact {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 8px;
+    padding: 8px 12px;
+    border-left: 3px solid #28a745;
+    font-size: 13px;
+    font-weight: 500;
+    color: #155724;
+    text-align: center;
+}
+
+.cf-best-month-card h4 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #155724;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-best-month-card p {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: #155724;
+    font-size: 15px;
+}
+
+.cf-best-month-card strong {
+    color: #0f5132;
+    font-weight: 600;
+}
+
+.cf-best-month-card p:last-child {
+    margin-bottom: 0;
+    font-style: italic;
+    color: #0f5132;
+}
+
+/* Clickable Cards Styles */
+.cf-clickable {
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.cf-clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    border-color: #667eea;
+}
+
+.cf-click-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(102, 126, 234, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.cf-clickable:hover .cf-click-hint {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* Problems Popup Styles */
+.cf-problems-popup-content {
+    max-width: 600px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.cf-problems-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.cf-problems-header h3 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-problems-header p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.cf-problems-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cf-problem-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.cf-problem-item:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+    transform: translateX(5px);
+}
+
+.cf-problem-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.cf-problem-name {
+    flex: 1;
+}
+
+.cf-problem-link {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+}
+
+.cf-problem-link:hover {
+    color: #667eea;
+    text-decoration: underline;
+}
+
+.cf-problem-rating {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Detailed Problems View Styles */
+.cf-problems-detailed-content {
+    max-width: 1000px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.cf-problems-detailed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.cf-back-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cf-back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.cf-problems-detailed-header h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-problems-summary {
+    font-size: 16px;
+    color: #666;
+    font-weight: 500;
+}
+
+.cf-problems-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.cf-problems-column h4 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}

@@ -265,7 +265,7 @@
             }
 
             const solvedProblemsStats = await fetchSolvedProblemsStats(user);
-            displaySolvedProblemsModal(solvedProblemsStats, user);
+            await displaySolvedProblemsModal(solvedProblemsStats, user);
         } catch (error) {
             showErrorModal(`Failed to load solved problems data: ${error.message}`);
         }
@@ -366,9 +366,9 @@
             const ratingStats = {};
             
             ALL_TOPICS.forEach(topic => {
-                topicStats[topic] = { solved: 0, totalSolved: 0, total: TOPIC_PROBLEM_COUNTS[topic] || 0 };
+                topicStats[topic] = { solved: 0, totalSolved: 0, total: TOPIC_PROBLEM_COUNTS[topic] || 0, problems: [] };
             });
-            for (let rating = 800; rating <= 3500; rating += 100) ratingStats[rating] = 0;
+            for (let rating = 800; rating <= 3500; rating += 100) ratingStats[rating] = { count: 0, problems: [] };
             
             const allTimeSolvedProblems = new Set();
             submissions.forEach(sub => {
@@ -389,21 +389,52 @@
                     const key = `${sub.problem.contestId}-${sub.problem.index}`;
                     if (!solvedProblems.has(key)) {
                         solvedProblems.add(key);
+                        
+                        // Store problem details for topics (each problem can be in multiple topics)
                         (sub.problem.tags || []).forEach(tag => {
-                            if (topicStats[tag]) topicStats[tag].solved++;
+                            if (topicStats[tag]) {
+                                topicStats[tag].solved++;
+                                topicStats[tag].problems.push({
+                                    contestId: sub.problem.contestId,
+                                    index: sub.problem.index,
+                                    name: sub.problem.name,
+                                    rating: sub.problem.rating,
+                                    url: `https://codeforces.com/problemset/problem/${sub.problem.contestId}/${sub.problem.index}`
+                                });
+                            }
                         });
+                        
+                        // Store problem details for ratings
                         if (sub.problem.rating) {
                             const level = Math.floor(sub.problem.rating / 100) * 100;
-                            if (ratingStats[level] !== undefined) ratingStats[level]++;
+                            if (ratingStats[level] !== undefined) {
+                                ratingStats[level].count++;
+                                ratingStats[level].problems.push({
+                                    contestId: sub.problem.contestId,
+                                    index: sub.problem.index,
+                                    name: sub.problem.name,
+                                    rating: sub.problem.rating,
+                                    url: `https://codeforces.com/problemset/problem/${sub.problem.contestId}/${sub.problem.index}`
+                                });
+                            }
                         }
                     }
                 }
             });
             
+            // Calculate the sum of all topic counts to verify it matches totalSolved
+            const topicSum = Object.values(topicStats).reduce((sum, topic) => sum + topic.solved, 0);
+            
+            // If there's a mismatch, log it for debugging
+            if (topicSum !== solvedProblems.size) {
+                console.log(`Topic sum: ${topicSum}, Total solved: ${solvedProblems.size}`);
+                console.log('This is expected because problems can have multiple tags');
+            }
+            
             return {
                 totalSolved: solvedProblems.size,
                 topicStats: Object.fromEntries(Object.entries(topicStats).filter(([_, s]) => s.solved > 0)),
-                ratingStats: Object.fromEntries(Object.entries(ratingStats).filter(([_, c]) => c > 0)),
+                ratingStats: Object.fromEntries(Object.entries(ratingStats).filter(([_, r]) => r.count > 0)),
                 monthOffset: monthOffset,
                 monthName: targetDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
                 registrationTimeSeconds: userInfo.registrationTimeSeconds
@@ -490,10 +521,11 @@
     }
 
     // Display solved problems modal
-    function displaySolvedProblemsModal(stats, user) {
+    async function displaySolvedProblemsModal(stats, user) {
         const existingModal = document.querySelector('.cf-modal-overlay');
-        if (existingModal) document.body.removeChild(existingModal);
-        const modal = createModal(`📈 Solved Problems for ${user}`, createSolvedProblemsContent(stats));
+        if (existingModal) existingModal.remove();
+        const content = await createSolvedProblemsContent(stats);
+        const modal = createModal(`📈 Solved Problems for ${user}`, content);
         document.body.appendChild(modal);
     }
 
@@ -609,10 +641,242 @@
         // This function is correct and doesn't need changes.
     }
 
+    // Show problems popup for current month only
+    function showProblemsPopup(title, problems, type) {
+        const existingModal = document.querySelector('.cf-modal-overlay');
+        if (existingModal) existingModal.remove();
+        
+        const content = document.createElement('div');
+        content.className = 'cf-problems-popup-content';
+        
+        // Header with back button
+        const header = document.createElement('div');
+        header.className = 'cf-problems-header';
+        header.innerHTML = `
+            <button class="cf-back-btn" onclick="goBackToSolvedProblems()">← Back</button>
+            <h3>${title}</h3>
+            <p>${problems.length} problem${problems.length !== 1 ? 's' : ''} solved this month</p>
+        `;
+        content.appendChild(header);
+        
+        const problemsList = document.createElement('div');
+        problemsList.className = 'cf-problems-list';
+        
+        if (problems.length === 0) {
+            problemsList.innerHTML = '<p class="cf-no-data">No problems solved this month.</p>';
+        } else {
+            // Sort problems by rating if available
+            const sortedProblems = problems.sort((a, b) => (a.rating || 0) - (b.rating || 0));
+            
+            sortedProblems.forEach(problem => {
+                const problemItem = document.createElement('div');
+                problemItem.className = 'cf-problem-item';
+                problemItem.innerHTML = `
+                    <div class="cf-problem-info">
+                        <div class="cf-problem-name">
+                            <a href="${problem.url}" target="_blank" class="cf-problem-link">
+                                ${problem.contestId}${problem.index} - ${problem.name}
+                            </a>
+                        </div>
+                        ${problem.rating ? `<div class="cf-problem-rating">${problem.rating}</div>` : ''}
+                    </div>
+                `;
+                problemsList.appendChild(problemItem);
+            });
+        }
+        
+        content.appendChild(problemsList);
+        
+        const modal = createModal(`📋 ${title} Problems`, content);
+        document.body.appendChild(modal);
+    }
+    
+    // Go back to solved problems main view
+    function goBackToSolvedProblems() {
+        const currentStats = window.currentSolvedProblemsStats;
+        const user = getCurrentPageUser();
+        if (currentStats && user) {
+            // Remove current modal first
+            const existingModal = document.querySelector('.cf-modal-overlay');
+            if (existingModal) existingModal.remove();
+            
+            // Show the main solved problems modal
+            displaySolvedProblemsModal(currentStats, user);
+        }
+    }
+
+    // Get rating color based on rating value
+    function getRatingColor(rating) {
+        if (rating < 1200) return '#808080'; // Newbie - Gray
+        if (rating < 1400) return '#008000'; // Pupil - Green
+        if (rating < 1600) return '#03a89e'; // Specialist - Cyan
+        if (rating < 1900) return '#0000FF'; // Expert - Blue
+        if (rating < 2100) return '#aa00aa'; // Candidate Master - Purple
+        if (rating < 2300) return '#ff8c00'; // Master - Orange
+        if (rating < 2400) return '#ff8c00'; // International Master - Orange
+        if (rating < 2600) return '#FF0000'; // Grandmaster - Red
+        if (rating < 3000) return '#FF0000'; // International Grandmaster - Red
+        return '#cc0000'; // Legendary Grandmaster - Dark Red
+    }
+
+    // Get rating title based on rating value
+    function getRatingTitle(rating) {
+        if (rating < 1200) return 'Newbie';
+        if (rating < 1400) return 'Pupil';
+        if (rating < 1600) return 'Specialist';
+        if (rating < 1900) return 'Expert';
+        if (rating < 2100) return 'Candidate Master';
+        if (rating < 2300) return 'Master';
+        if (rating < 2400) return 'International Master';
+        if (rating < 2600) return 'Grandmaster';
+        if (rating < 3000) return 'International Grandmaster';
+        return 'Legendary Grandmaster';
+    }
+
+    // Get motivational message based on current rating and max rating
+    function getMotivationalMessage(currentRating, maxRating, user) {
+        const currentTitle = getRatingTitle(currentRating);
+        
+        // Check if user is at their maximum rating
+        if (currentRating >= maxRating) {
+            return `
+                <div class="cf-motivation-card">
+                    <h4>🏆 Maximum Achievement!</h4>
+                    <p>Current: <strong>${currentTitle}</strong> (${currentRating})</p>
+                    <p>Max Rating: <strong>${maxRating}</strong></p>
+                    <p style="margin-top: 8px; font-style: italic; color: #1976d2;">
+                        🎯 <strong>Challenge:</strong> Break your record! The next rating will be named after you!
+                    </p>
+                    <p style="margin-top: 5px; font-size: 14px; color: #666;">
+                        Every point above ${maxRating} will be a new personal best with your name on it!
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Check if there's a next rating level
+        let nextRating = null;
+        if (currentRating < 1200) nextRating = 1200;
+        else if (currentRating < 1400) nextRating = 1400;
+        else if (currentRating < 1600) nextRating = 1600;
+        else if (currentRating < 1900) nextRating = 1900;
+        else if (currentRating < 2100) nextRating = 2100;
+        else if (currentRating < 2300) nextRating = 2300;
+        else if (currentRating < 2400) nextRating = 2400;
+        else if (currentRating < 2600) nextRating = 2600;
+        else if (currentRating < 3000) nextRating = 3000;
+        
+        // If no next rating found (user is at max level), show break record message
+        if (!nextRating) {
+            return `
+                <div class="cf-motivation-card">
+                    <h4>🏆 Maximum Achievement!</h4>
+                    <p>Current: <strong>${currentTitle}</strong> (${currentRating})</p>
+                    <p style="margin-top: 8px; font-style: italic; color: #1976d2;">
+                        🎯 <strong>Challenge:</strong> Break your record! The next rating will be named after you!
+                    </p>
+                    <p style="margin-top: 5px; font-size: 14px; color: #666;">
+                        Every point above ${currentRating} will be a new personal best with your name on it!
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Regular progression message
+        const nextTitle = getRatingTitle(nextRating);
+        const ratingDiff = nextRating - currentRating;
+        
+        // Add motivational text based on rating difference
+        let motivation = '';
+        if (ratingDiff <= 50) {
+            motivation = '💪 You\'re so close! Keep pushing!';
+        } else if (ratingDiff <= 100) {
+            motivation = '🚀 Almost there! Stay focused!';
+        } else if (ratingDiff <= 200) {
+            motivation = '📈 Great progress! Keep going!';
+        } else {
+            motivation = '🎯 Every step counts! Keep practicing!';
+        }
+        
+        return `
+            <div class="cf-motivation-card">
+                <h4>📈 Next Goal</h4>
+                <p>Current: <strong>${currentTitle}</strong> (${currentRating})</p>
+                <p>Next: <strong>${nextTitle}</strong> (${nextRating}) - Need ${ratingDiff} points</p>
+                <p style="margin-top: 8px; font-style: italic; color: #1976d2;">${motivation}</p>
+            </div>
+        `;
+    }
+
+    // Find the month with maximum solved problems (optimized)
+    async function findBestMonth(handle) {
+        try {
+            const now = new Date();
+            const userResponse = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+            if (!userResponse.ok) throw new Error(`HTTP ${userResponse.status}`);
+            const userData = await userResponse.json();
+            if (userData.status !== 'OK') throw new Error(`User info API Error: ${userData.comment}`);
+            const userInfo = userData.result?.[0];
+            if (!userInfo) throw new Error('User not found');
+            
+            const registrationDate = new Date(userInfo.registrationTimeSeconds * 1000);
+            const startDate = new Date(registrationDate.getFullYear(), registrationDate.getMonth(), 1);
+            const endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            let bestMonth = null;
+            let maxProblems = 0;
+            
+            // Check last 12 months only for better performance
+            const monthsToCheck = Math.min(12, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1);
+            
+            // Check current month first
+            try {
+                const currentMonthStats = await fetchSolvedProblemsStats(handle, 0);
+                if (currentMonthStats.totalSolved > 0) {
+                    maxProblems = currentMonthStats.totalSolved;
+                    bestMonth = {
+                        monthName: currentMonthStats.monthName,
+                        totalSolved: currentMonthStats.totalSolved,
+                        monthOffset: currentMonthStats.monthOffset
+                    };
+                }
+            } catch (error) {
+                // Continue if current month fails
+            }
+            
+            // Check previous months in parallel (limited to 6 for performance)
+            const promises = [];
+            for (let i = 1; i < Math.min(monthsToCheck, 6); i++) {
+                const monthOffset = -i;
+                promises.push(
+                    fetchSolvedProblemsStats(handle, monthOffset).catch(() => null)
+                );
+            }
+            
+            const results = await Promise.all(promises);
+            results.forEach((monthStats, index) => {
+                if (monthStats && monthStats.totalSolved > maxProblems) {
+                    maxProblems = monthStats.totalSolved;
+                    bestMonth = {
+                        monthName: monthStats.monthName,
+                        totalSolved: monthStats.totalSolved,
+                        monthOffset: monthStats.monthOffset
+                    };
+                }
+            });
+            
+            return bestMonth;
+        } catch (error) {
+            console.error('Error finding best month:', error);
+            return null;
+        }
+    }
+
     // Create contest content
     function createContestContent(contestStats) {
         const container = document.createElement('div');
         container.className = 'cf-contest-content';
+        
         const summary = document.createElement('div');
         summary.className = 'cf-summary';
         summary.innerHTML = `
@@ -620,17 +884,20 @@
             <div class="cf-summary-item"><span class="cf-label">Current Rating:</span><span class="cf-value">${contestStats.currentRating}</span></div>
             <div class="cf-summary-item"><span class="cf-label">Max Rating:</span><span class="cf-value">${contestStats.maxRating}</span></div>
         `;
+        
         const chartContainer = document.createElement('div');
         chartContainer.className = 'cf-chart-container';
         chartContainer.innerHTML = '<h3>Rating Progress</h3><canvas id="cf-rating-chart"></canvas>';
-        container.appendChild(summary);
-        container.appendChild(chartContainer);
+        
+                            container.appendChild(summary);
+                    container.appendChild(chartContainer);
+        
         setTimeout(() => createRatingChart(contestStats), 500);
         return container;
     }
 
     // Create solved problems content
-    function createSolvedProblemsContent(stats) {
+    async function createSolvedProblemsContent(stats) {
         const container = document.createElement('div');
         container.className = 'cf-solved-problems-content';
 
@@ -656,6 +923,8 @@
         summary.className = 'cf-summary';
         summary.innerHTML = `<div class="cf-summary-item"><span class="cf-label">Problems Solved this month:</span><span class="cf-value">${stats.totalSolved}</span></div>`;
         container.appendChild(summary);
+
+
 
         const topicsSection = document.createElement('div');
         topicsSection.className = 'cf-topics-section';
@@ -706,6 +975,7 @@
                     <div class="cf-stat"><span class="cf-stat-label">Total in CF:</span><span class="cf-stat-value">${topicData.total}</span></div>
                 </div>
             `;
+            
             container.appendChild(topicCard);
         });
     }
@@ -723,19 +993,20 @@
         }
         
         container.innerHTML = ''; // Clear previous content
-        sortedRatings.forEach(([rating, count], index) => {
+        sortedRatings.forEach(([rating, ratingData], index) => {
             const ratingCard = document.createElement('div');
             ratingCard.className = 'cf-rating-card';
             ratingCard.style.animationDelay = `${index * 50}ms`;
             ratingCard.innerHTML = `
                 <div class="cf-rating-header">
                     <h4 class="cf-rating-level">${rating}</h4>
-                    <span class="cf-rating-badge">${count}</span>
+                    <span class="cf-rating-badge">${ratingData.count}</span>
                 </div>
                 <div class="cf-rating-stats">
-                    <div class="cf-stat"><span class="cf-stat-label">Solved:</span><span class="cf-stat-value">${count}</span></div>
+                    <div class="cf-stat"><span class="cf-stat-label">Solved:</span><span class="cf-stat-value">${ratingData.count}</span></div>
                 </div>
             `;
+            
             container.appendChild(ratingCard);
         });
     }
@@ -844,12 +1115,12 @@
         showLoadingModal('Loading data for selected month...');
         try {
             const newStats = await fetchSolvedProblemsStats(user, newMonthOffset);
-            displaySolvedProblemsModal(newStats, user);
+            await displaySolvedProblemsModal(newStats, user);
         } catch (error) {
             showErrorModal(error.message);
-            setTimeout(() => {
+            setTimeout(async () => {
                  const currentStats = window.currentSolvedProblemsStats;
-                 if (currentStats) displaySolvedProblemsModal(currentStats, user);
+                 if (currentStats) await displaySolvedProblemsModal(currentStats, user);
             }, 1500);
         }
     }
@@ -865,7 +1136,7 @@
     
     // Create rating progress chart
     function createRatingChart(contestStats) {
-        const { contestHistory, maxRating } = contestStats;
+        const { contestHistory, maxRating, currentRating } = contestStats;
         const canvas = document.getElementById('cf-rating-chart');
         
         if (!canvas || !window.Chart) {
@@ -880,6 +1151,16 @@
         canvas.width = 600;
         canvas.height = 400;
 
+        // Get user's current rating color
+        const userRatingColor = getRatingColor(currentRating);
+        
+        // Convert hex to rgba for background
+        const hex = userRatingColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+
         new Chart(canvas, {
             type: 'line',
             data: {
@@ -887,9 +1168,14 @@
                 datasets: [{
                     label: 'Rating',
                     data: contestHistory,
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
-                    fill: true
+                    borderColor: userRatingColor,
+                    backgroundColor: backgroundColor,
+                    fill: true,
+                    borderWidth: 3,
+                    pointBackgroundColor: userRatingColor,
+                    pointBorderColor: userRatingColor,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
