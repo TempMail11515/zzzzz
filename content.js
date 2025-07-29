@@ -965,7 +965,7 @@
         container.innerHTML = ''; // Clear previous content
         sortedTopics.forEach(([topicName, topicData], index) => {
             const topicCard = document.createElement('div');
-            topicCard.className = 'cf-topic-card cf-solved-card cf-clickable';
+            topicCard.className = 'cf-topic-card cf-solved-card';
             topicCard.style.animationDelay = `${index * 50}ms`;
             topicCard.innerHTML = `
                 <div class="cf-topic-header">
@@ -977,13 +977,7 @@
                     <div class="cf-stat"><span class="cf-stat-label">Total Solved:</span><span class="cf-stat-value">${topicData.totalSolved || 0}</span></div>
                     <div class="cf-stat"><span class="cf-stat-label">Total in CF:</span><span class="cf-stat-value">${topicData.total}</span></div>
                 </div>
-                <div class="cf-click-hint">Click to see problems</div>
             `;
-            
-            // Add click event to show problems popup
-            topicCard.addEventListener('click', () => {
-                showProblemsPopup(topicName, topicData.problems, 'topic');
-            });
             
             container.appendChild(topicCard);
         });
@@ -1004,7 +998,7 @@
         container.innerHTML = ''; // Clear previous content
         sortedRatings.forEach(([rating, ratingData], index) => {
             const ratingCard = document.createElement('div');
-            ratingCard.className = 'cf-rating-card cf-clickable';
+            ratingCard.className = 'cf-rating-card';
             ratingCard.style.animationDelay = `${index * 50}ms`;
             ratingCard.innerHTML = `
                 <div class="cf-rating-header">
@@ -1014,13 +1008,7 @@
                 <div class="cf-rating-stats">
                     <div class="cf-stat"><span class="cf-stat-label">Solved:</span><span class="cf-stat-value">${ratingData.count}</span></div>
                 </div>
-                <div class="cf-click-hint">Click to see problems</div>
             `;
-            
-            // Add click event to show problems popup
-            ratingCard.addEventListener('click', () => {
-                showProblemsPopup(`Rating ${rating}`, ratingData.problems, 'rating');
-            });
             
             container.appendChild(ratingCard);
         });
