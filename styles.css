@@ -579,3 +579,49 @@
     border-radius: 6px;
     min-width: 80px;
 }
+
+/* Motivation Card Styles */
+.cf-motivation-section {
+    margin: 20px 0;
+}
+
+.cf-motivation-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 5px solid #667eea;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    animation: slideInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.cf-motivation-card h4 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cf-motivation-card p {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: #555;
+    font-size: 15px;
+}
+
+.cf-motivation-card strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.cf-motivation-card p:last-child {
+    margin-bottom: 0;
+    font-style: italic;
+    color: #666;
+}

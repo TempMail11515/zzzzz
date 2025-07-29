@@ -609,10 +609,84 @@
         // This function is correct and doesn't need changes.
     }
 
+    // Get rating color based on rating value
+    function getRatingColor(rating) {
+        if (rating < 1200) return '#808080'; // Newbie - Gray
+        if (rating < 1400) return '#008000'; // Pupil - Green
+        if (rating < 1600) return '#03a89e'; // Specialist - Cyan
+        if (rating < 1900) return '#0000FF'; // Expert - Blue
+        if (rating < 2100) return '#aa00aa'; // Candidate Master - Purple
+        if (rating < 2300) return '#ff8c00'; // Master - Orange
+        if (rating < 2400) return '#ff8c00'; // International Master - Orange
+        if (rating < 2600) return '#FF0000'; // Grandmaster - Red
+        if (rating < 3000) return '#FF0000'; // International Grandmaster - Red
+        return '#cc0000'; // Legendary Grandmaster - Dark Red
+    }
+
+    // Get rating title based on rating value
+    function getRatingTitle(rating) {
+        if (rating < 1200) return 'Newbie';
+        if (rating < 1400) return 'Pupil';
+        if (rating < 1600) return 'Specialist';
+        if (rating < 1900) return 'Expert';
+        if (rating < 2100) return 'Candidate Master';
+        if (rating < 2300) return 'Master';
+        if (rating < 2400) return 'International Master';
+        if (rating < 2600) return 'Grandmaster';
+        if (rating < 3000) return 'International Grandmaster';
+        return 'Legendary Grandmaster';
+    }
+
+    // Get motivational message based on current rating and max rating
+    function getMotivationalMessage(currentRating, maxRating, user) {
+        const currentTitle = getRatingTitle(currentRating);
+        const maxTitle = getRatingTitle(maxRating);
+        
+        if (currentRating === maxRating) {
+            // User is at their max rating - encourage breaking it
+            return `
+                <div class="cf-motivation-card">
+                    <h4>🏆 Maximum Achievement!</h4>
+                    <p>Congratulations <strong>${user}</strong>! You've reached your peak rating of <strong>${currentRating}</strong> (${currentTitle}).</p>
+                    <p>💪 <strong>Next Challenge:</strong> Break your personal record! Every rating point above ${maxRating} will be a new achievement with your name on it!</p>
+                    <p>🎯 <strong>Goal:</strong> Aim for ${maxRating + 100} to set a new personal best!</p>
+                </div>
+            `;
+        } else {
+            // User is below their max - encourage reaching next level
+            const nextRating = currentRating < 1200 ? 1200 : 
+                              currentRating < 1400 ? 1400 : 
+                              currentRating < 1600 ? 1600 : 
+                              currentRating < 1900 ? 1900 : 
+                              currentRating < 2100 ? 2100 : 
+                              currentRating < 2300 ? 2300 : 
+                              currentRating < 2400 ? 2400 : 
+                              currentRating < 2600 ? 2600 : 
+                              currentRating < 3000 ? 3000 : 3000;
+            
+            const nextTitle = getRatingTitle(nextRating);
+            const ratingDiff = nextRating - currentRating;
+            
+            return `
+                <div class="cf-motivation-card">
+                    <h4>🚀 Keep Going!</h4>
+                    <p>You're currently a <strong>${currentTitle}</strong> with rating <strong>${currentRating}</strong>.</p>
+                    <p>📈 <strong>Next Goal:</strong> Become a <strong>${nextTitle}</strong>! You need ${ratingDiff} more rating points.</p>
+                    <p>💡 <strong>Tip:</strong> Focus on ${currentRating < 1400 ? 'implementation and basic algorithms' : 
+                                                           currentRating < 1600 ? 'greedy algorithms and data structures' :
+                                                           currentRating < 1900 ? 'dynamic programming and graph algorithms' :
+                                                           currentRating < 2100 ? 'advanced algorithms and problem-solving techniques' :
+                                                           'mastering complex algorithms and optimization techniques'} to improve faster!</p>
+                </div>
+            `;
+        }
+    }
+
     // Create contest content
     function createContestContent(contestStats) {
         const container = document.createElement('div');
         container.className = 'cf-contest-content';
+        
         const summary = document.createElement('div');
         summary.className = 'cf-summary';
         summary.innerHTML = `
@@ -620,11 +694,21 @@
             <div class="cf-summary-item"><span class="cf-label">Current Rating:</span><span class="cf-value">${contestStats.currentRating}</span></div>
             <div class="cf-summary-item"><span class="cf-label">Max Rating:</span><span class="cf-value">${contestStats.maxRating}</span></div>
         `;
+        
+        // Add motivational message
+        const motivationSection = document.createElement('div');
+        motivationSection.className = 'cf-motivation-section';
+        const user = getCurrentPageUser();
+        motivationSection.innerHTML = getMotivationalMessage(contestStats.currentRating, contestStats.maxRating, user);
+        
         const chartContainer = document.createElement('div');
         chartContainer.className = 'cf-chart-container';
         chartContainer.innerHTML = '<h3>Rating Progress</h3><canvas id="cf-rating-chart"></canvas>';
+        
         container.appendChild(summary);
+        container.appendChild(motivationSection);
         container.appendChild(chartContainer);
+        
         setTimeout(() => createRatingChart(contestStats), 500);
         return container;
     }
@@ -865,7 +949,7 @@
     
     // Create rating progress chart
     function createRatingChart(contestStats) {
-        const { contestHistory, maxRating } = contestStats;
+        const { contestHistory, maxRating, currentRating } = contestStats;
         const canvas = document.getElementById('cf-rating-chart');
         
         if (!canvas || !window.Chart) {
@@ -880,6 +964,16 @@
         canvas.width = 600;
         canvas.height = 400;
 
+        // Get user's current rating color
+        const userRatingColor = getRatingColor(currentRating);
+        
+        // Convert hex to rgba for background
+        const hex = userRatingColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+
         new Chart(canvas, {
             type: 'line',
             data: {
@@ -887,9 +981,14 @@
                 datasets: [{
                     label: 'Rating',
                     data: contestHistory,
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
-                    fill: true
+                    borderColor: userRatingColor,
+                    backgroundColor: backgroundColor,
+                    fill: true,
+                    borderWidth: 3,
+                    pointBackgroundColor: userRatingColor,
+                    pointBorderColor: userRatingColor,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
