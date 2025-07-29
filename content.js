@@ -687,6 +687,11 @@
         const currentStats = window.currentSolvedProblemsStats;
         const user = getCurrentPageUser();
         if (currentStats && user) {
+            // Remove current modal first
+            const existingModal = document.querySelector('.cf-modal-overlay');
+            if (existingModal) existingModal.remove();
+            
+            // Show the main solved problems modal
             displaySolvedProblemsModal(currentStats, user);
         }
     }
