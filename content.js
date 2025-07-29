@@ -1103,7 +1103,7 @@
             await displaySolvedProblemsModal(newStats, user);
         } catch (error) {
             showErrorModal(error.message);
-            setTimeout(() => {
+            setTimeout(async () => {
                  const currentStats = window.currentSolvedProblemsStats;
                  if (currentStats) await displaySolvedProblemsModal(currentStats, user);
             }, 1500);
